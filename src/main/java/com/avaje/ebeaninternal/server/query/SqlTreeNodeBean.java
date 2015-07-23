@@ -77,6 +77,12 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 
   protected String baseTableAlias;
 
+  /**
+   * Table alias set if this bean node includes a join to a intersection
+   * table and that table has history support.
+   */
+  protected String intersectionAsOfTableAlias;
+
   public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, SqlTreeProperties props,
       List<SqlTreeNode> myChildren, boolean withId) {
 
@@ -471,6 +477,10 @@ public class SqlTreeNodeBean implements SqlTreeNode {
     if (desc.isHistorySupport()) {
       query.addAsOfTableAlias(baseTableAlias);
     }
+    if (intersectionAsOfTableAlias != null) {
+      // adds the 'as of' predicate for this intersection table
+      query.addAsOfTableAlias(intersectionAsOfTableAlias);
+    }
     for (int i = 0; i < children.length; i++) {
       children[i].addAsOfTableAlias(query);
     }
@@ -491,8 +501,12 @@ public class SqlTreeNodeBean implements SqlTreeNode {
         String parentAlias = ctx.getTableAlias(split[0]);
         String alias2 = alias + "z_";
 
+        // adding the additional join to the intersection table
         TableJoin manyToManyJoin = manyProp.getIntersectionTableJoin();
         manyToManyJoin.addJoin(joinType, parentAlias, alias2, ctx);
+        if (!manyProp.isExcludedFromHistory()) {
+          intersectionAsOfTableAlias = alias2;
+        }
 
         return nodeBeanProp.addJoin(joinType, alias2, alias, ctx);
       }

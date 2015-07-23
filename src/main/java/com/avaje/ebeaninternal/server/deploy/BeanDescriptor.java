@@ -531,8 +531,25 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
 
   /**
    * Initialise the exported and imported parts for associated properties.
+   *
+   * @param asOfTableMap the map of base tables to associated 'with history' tables
+   * @param asOfViewSuffix the suffix added to the table name to derive the 'with history' view name
    */
-  public void initialiseOther() {
+  public void initialiseOther(Map<String, String> asOfTableMap, String asOfViewSuffix) {
+
+    if (historySupport) {
+      // history support on this bean so check all associated intersection tables
+      // and if they are not excluded register the associated 'with history' table
+      for (int i = 0; i < propertiesManyToMany.length; i++) {
+        if (!propertiesManyToMany[i].isExcludedFromHistory()) {
+          // this intersection table has history support so also register
+          // it into the asOfTableMap
+          TableJoin intersectionTableJoin = propertiesManyToMany[i].getIntersectionTableJoin();
+          String intersectionTableName = intersectionTableJoin.getTable();
+          asOfTableMap.put(intersectionTableName, intersectionTableName + asOfViewSuffix);
+        }
+      }
+    }
 
     if (!isEmbedded()) {
       // initialise all the non-id properties

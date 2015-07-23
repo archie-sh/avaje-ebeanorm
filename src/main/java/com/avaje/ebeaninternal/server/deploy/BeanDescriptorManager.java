@@ -128,10 +128,12 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
   private final boolean eagerFetchLobs;
 
+  private final String asOfViewSuffix;
+
   /**
    * Map of base tables to 'with history views' used to support 'as of' queries.
    */
-  private final Map<String,String> withHistoryTables = new HashMap<String, String>();
+  private final Map<String,String> asOfTableMap = new HashMap<String, String>();
 
   /**
    * Create for a given database dbConfig.
@@ -151,7 +153,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     this.idBinderFactory = new IdBinderFactory(databasePlatform.isIdInExpandedForm());
     this.eagerFetchLobs = serverConfig.isEagerFetchLobs();
 
-    this.readAnnotations = new ReadAnnotations(serverConfig.getAsOfViewSuffix());
+    this.asOfViewSuffix = serverConfig.getAsOfViewSuffix();
+    this.readAnnotations = new ReadAnnotations(asOfViewSuffix);
     this.bootupClasses = config.getBootupClasses();
     this.createProperties = config.getDeployCreateProperties();
     this.typeManager = config.getTypeManager();
@@ -215,7 +218,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
   }
 
   /**
-   * Deploy returning the withHistoryTables Map (which is required by the SQL builders).
+   * Deploy returning the asOfTableMap (which is required by the SQL builders).
    */
   public Map<String,String> deploy() {
 
@@ -250,7 +253,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
       deplyInfoMap.clear();
       deplyInfoMap = null;
 
-      return withHistoryTables;
+      return asOfTableMap;
 
     } catch (RuntimeException e) {
       String msg = "Error in deployment";
@@ -339,7 +342,7 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     // first (as they are needed to initialise the
     // associated properties in the second pass).
     for (BeanDescriptor<?> d : descMap.values()) {
-      d.initialiseId(withHistoryTables);
+      d.initialiseId(asOfTableMap);
     }
 
     // PASS 2:
@@ -351,7 +354,10 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     // PASS 3:
     // now initialise all the associated properties
     for (BeanDescriptor<?> d : descMap.values()) {
-      d.initialiseOther();
+      // also look for intersection tables with
+      // associated history support and register them
+      // into the asOfTableMap
+      d.initialiseOther(asOfTableMap, asOfViewSuffix);
     }
 
     // create BeanManager for each non-embedded entity bean
