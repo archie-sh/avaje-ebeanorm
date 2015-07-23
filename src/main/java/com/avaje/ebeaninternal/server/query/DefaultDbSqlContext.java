@@ -234,7 +234,7 @@ public class DefaultDbSqlContext implements DbSqlContext {
   public void appendColumn(String tableAlias, String column) {
     sb.append(COMMA);
 
-    if (column.indexOf("${}") > -1) {
+    if (column.contains("${}")) {
       // support DB functions such as lower() etc
       // with the use of secondary columns
       String x = StringHelper.replaceString(column, "${}", tableAlias);
