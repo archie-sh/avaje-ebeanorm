@@ -286,15 +286,24 @@ public interface Query<T> extends Serializable {
    */
   Query<T> setRawSql(RawSql rawSql);
 
-  Query<T> asOf(Timestamp historyAsAtValue);
+  /**
+   * Perform an 'As of' query using history tables to return the object graph
+   * as of a time in the past.
+   * <p>
+   *   To perform this query the DB must have underlying history tables.
+   * </p>
+   *
+   * @param asOf the date time in the past at which you want to view the data
+   */
+  Query<T> asOf(Timestamp asOf);
 
-    /**
-     * Cancel the query execution if supported by the underlying database and
-     * driver.
-     * <p>
-     * This must be called from a different thread to the query executor.
-     * </p>
-     */
+  /**
+   * Cancel the query execution if supported by the underlying database and
+   * driver.
+   * <p>
+   * This must be called from a different thread to the query executor.
+   * </p>
+   */
   void cancel();
 
   /**
