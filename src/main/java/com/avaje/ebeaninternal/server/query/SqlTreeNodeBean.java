@@ -9,6 +9,7 @@ import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.bean.PersistenceContext;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -70,25 +71,30 @@ public class SqlTreeNodeBean implements SqlTreeNode {
   
   protected final BeanPropertyAssocMany<?> lazyLoadParent;
 
+  protected final SpiQuery.TemporalMode temporalMode;
+
   private final IdBinder lazyLoadParentIdBinder;
+
+  protected String baseTableAlias;
 
   public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, SqlTreeProperties props,
       List<SqlTreeNode> myChildren, boolean withId) {
 
-    this(prefix, beanProp, beanProp.getTargetDescriptor(), props, myChildren, withId, null);
+    this(prefix, beanProp, beanProp.getTargetDescriptor(), props, myChildren, withId, null, SpiQuery.TemporalMode.CURRENT);
   }
 
   /**
    * Create with the appropriate node.
    */
   public SqlTreeNodeBean(String prefix, BeanPropertyAssoc<?> beanProp, BeanDescriptor<?> desc,
-      SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId,  BeanPropertyAssocMany<?> lazyLoadParent) {
+      SqlTreeProperties props, List<SqlTreeNode> myChildren, boolean withId,  BeanPropertyAssocMany<?> lazyLoadParent, SpiQuery.TemporalMode temporalMode) {
 
     this.lazyLoadParent = lazyLoadParent;
     this.lazyLoadParentIdBinder = (lazyLoadParent == null) ? null : lazyLoadParent.getBeanDescriptor().getIdBinder();
     this.prefix = prefix;
     this.nodeBeanProp = beanProp;
     this.desc = desc;
+    this.temporalMode = temporalMode;
     this.inheritInfo = desc.getInheritInfo();
     this.extraWhere = (beanProp == null) ? null : beanProp.getExtraWhere();
 
@@ -441,6 +447,8 @@ public class SqlTreeNodeBean implements SqlTreeNode {
     ctx.pushJoin(prefix);
     ctx.pushTableAlias(prefix);
 
+    baseTableAlias = ctx.getTableAlias(prefix);
+
     // join and return SqlJoinType to use for child joins
     joinType = appendFromBaseTable(ctx, joinType);
 
@@ -455,6 +463,17 @@ public class SqlTreeNodeBean implements SqlTreeNode {
 
     ctx.popTableAlias();
     ctx.popJoin();
+  }
+
+  public void addAsOfTableAlias(SpiQuery<?> query) {
+    // if history on this bean type add it's alias
+    // for each alias we add an effect date predicate
+    if (desc.isHistorySupport()) {
+      query.addAsOfTableAlias(baseTableAlias);
+    }
+    for (int i = 0; i < children.length; i++) {
+      children[i].addAsOfTableAlias(query);
+    }
   }
 
   /**

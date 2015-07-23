@@ -112,6 +112,8 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
    * The base database table.
    */
   private final String baseTable;
+  private final String baseTableAsOf;
+  private final boolean historySupport;
 
   /**
    * Map of BeanProperty Linked so as to preserve order.
@@ -332,8 +334,9 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
     this.updateChangesOnly = deploy.isUpdateChangesOnly();
     this.compoundUniqueConstraints = deploy.getCompoundUniqueConstraints();
 
+    this.historySupport = deploy.isHistorySupport();
     this.baseTable = InternString.intern(deploy.getBaseTable());
-
+    this.baseTableAsOf = deploy.getBaseTableAsOf();
     this.autoFetchTunable = EntityType.ORM.equals(entityType) && (beanFinder == null);
 
     // helper object used to derive lists of properties
@@ -496,11 +499,17 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
    * These properties need to be initialised prior to the association properties
    * as they are used to get the imported and exported properties.
    * </p>
+   * @param withHistoryTables map populated if @History is supported on this entity bean
    */
-  public void initialiseId() {
+  public void initialiseId(Map<String, String> withHistoryTables) {
 
     if (logger.isTraceEnabled()) {
       logger.trace("BeanDescriptor initialise " + fullName);
+    }
+
+    if (historySupport) {
+      // add mapping (used to swap out baseTable for asOf queries)
+      withHistoryTables.put(baseTable, baseTableAsOf);
     }
 
     if (inheritInfo != null) {
@@ -761,7 +770,7 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
   }
 
   public void cacheBeanPut(T bean) {
-    cacheBeanPutData((EntityBean)bean);
+    cacheBeanPutData((EntityBean) bean);
   }
   
   /**
@@ -1626,6 +1635,24 @@ public class BeanDescriptor<T> implements MetaBeanInfo {
    */
   public String getBaseTable() {
     return baseTable;
+  }
+
+  /**
+   * Return the base table to use given the query temporal mode.
+   */
+  public String getBaseTable(SpiQuery.TemporalMode mode) {
+    switch (mode) {
+      case VERSIONS: return baseTableAsOf;
+      case AS_OF: return baseTableAsOf;
+        default: return baseTable;
+    }
+  }
+
+  /**
+   * Return true if this entity bean has history support.
+   */
+  public boolean isHistorySupport() {
+    return historySupport;
   }
 
   /**

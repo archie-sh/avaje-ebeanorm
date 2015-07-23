@@ -4,6 +4,7 @@ import com.avaje.ebean.text.PathProperties;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -285,13 +286,15 @@ public interface Query<T> extends Serializable {
    */
   Query<T> setRawSql(RawSql rawSql);
 
-  /**
-   * Cancel the query execution if supported by the underlying database and
-   * driver.
-   * <p>
-   * This must be called from a different thread to the query executor.
-   * </p>
-   */
+  Query<T> asOf(Timestamp historyAsAtValue);
+
+    /**
+     * Cancel the query execution if supported by the underlying database and
+     * driver.
+     * <p>
+     * This must be called from a different thread to the query executor.
+     * </p>
+     */
   void cancel();
 
   /**
