@@ -101,7 +101,14 @@ public interface SpiQuery<T> extends Query<T> {
     /**
      * Query runs 'As Of' a given date time.
      */
-    AS_OF
+    AS_OF;
+
+    /**
+     * Return the mode of the query of if null return CURRENT mode.
+     */
+    public static TemporalMode of(SpiQuery<?> query) {
+      return (query != null) ? query.getTemporalMode() : TemporalMode.CURRENT;
+    }
   }
 
   /**

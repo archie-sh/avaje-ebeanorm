@@ -265,7 +265,8 @@ public class SqlTreeBuilder {
       // Optional many property for lazy loading query
       BeanPropertyAssocMany<?> lazyLoadMany = (query == null) ? null : query.getLazyLoadForParentsProperty();
       boolean withId = !rawNoId && !subQuery && (query == null || !query.isDistinct());
-      return new SqlTreeNodeRoot(desc, props, myList, withId, includeJoin, lazyLoadMany, query.getTemporalMode());
+
+      return new SqlTreeNodeRoot(desc, props, myList, withId, includeJoin, lazyLoadMany, SpiQuery.TemporalMode.of(query));
 
     } else if (prop instanceof BeanPropertyAssocMany<?>) {
       return new SqlTreeNodeManyRoot(prefix, (BeanPropertyAssocMany<?>) prop, props, myList);
