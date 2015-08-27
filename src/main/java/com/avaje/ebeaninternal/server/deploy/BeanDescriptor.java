@@ -19,6 +19,8 @@ import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.event.changelog.BeanChange;
 import com.avaje.ebean.event.changelog.ChangeLogFilter;
 import com.avaje.ebean.event.changelog.ChangeType;
+import com.avaje.ebean.event.readaudit.DefaultQueryAudit;
+import com.avaje.ebean.event.readaudit.ReadAuditQuery;
 import com.avaje.ebean.meta.MetaBeanInfo;
 import com.avaje.ebean.meta.MetaQueryPlanStatistic;
 import com.avaje.ebean.plugin.SpiBeanType;
@@ -87,6 +89,16 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
   private final ConcurrentHashMap<String, ElPropertyDeploy> elDeployCache = new ConcurrentHashMap<String, ElPropertyDeploy>();
 
   private final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
+
+  public boolean isAuditReads() {
+    return true;
+  }
+
+  ReadAuditQuery queryAudit = new DefaultQueryAudit();
+
+  public ReadAuditQuery getQueryAudit() {
+    return queryAudit;
+  }
 
   public enum EntityType {
     ORM, EMBEDDED, SQL

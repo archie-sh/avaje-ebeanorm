@@ -403,4 +403,8 @@ public final class OrmQueryRequest<T> extends BeanRequest implements BeanQueryRe
     int batchSize = query.getLazyLoadBatchSize();
     return (batchSize > 0) ? batchSize : ebeanServer.getLazyLoadBatchSize();
   }
+
+  public boolean isAuditReads() {
+    return beanDescriptor.isAuditReads();
+  }
 }

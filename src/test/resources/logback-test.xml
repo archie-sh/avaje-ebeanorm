@@ -22,6 +22,17 @@
     </encoder>
   </appender>
 
+  <appender name="READAUDIT_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>log/readAudit.log</File>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>log/readAudit.log.%d{yyyy-MM-dd}</FileNamePattern>
+      <MaxHistory>90</MaxHistory>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
+    </encoder>
+  </appender>
+
   <appender name="CHANGE_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <File>log/changeLog.log</File>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -32,6 +43,10 @@
       <pattern>%d{HH:mm:ss.SSS} %msg%n</pattern>
     </encoder>
   </appender>
+
+  <logger name="org.avaje.ebean.QueryAudit" level="TRACE" additivity="false">
+    <appender-ref ref="READAUDIT_LOG"/>
+  </logger>
 
   <logger name="org.avaje.ebean.ChangeLog" level="TRACE" additivity="false">
     <appender-ref ref="CHANGE_LOG"/>

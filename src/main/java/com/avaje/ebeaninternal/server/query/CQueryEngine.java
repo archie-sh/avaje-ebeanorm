@@ -159,6 +159,11 @@ public class CQueryEngine {
         logFindManySummary(cquery);
       }
 
+      if (request.isAuditReads()) {
+        // indicates we need to audit as the iterator progresses
+        cquery.auditFindIterate();
+      }
+
       return readIterate;
 
     } catch (SQLException e) {
@@ -195,6 +200,10 @@ public class CQueryEngine {
 
       if (request.isLogSummary()) {
         logFindManySummary(cquery);
+      }
+
+      if (request.isAuditReads()) {
+        cquery.auditFindMany();
       }
 
       return versions;
@@ -276,6 +285,10 @@ public class CQueryEngine {
         logFindManySummary(cquery);
       }
 
+      if (request.isAuditReads()) {
+        cquery.auditFindMany();
+      }
+
       request.executeSecondaryQueries();
 
       return beanCollection;
@@ -319,6 +332,10 @@ public class CQueryEngine {
 
       if (request.isLogSummary()) {
         logFindBeanSummary(cquery);
+      }
+
+      if (request.isAuditReads()) {
+        cquery.auditFind(bean);
       }
 
       request.executeSecondaryQueries();

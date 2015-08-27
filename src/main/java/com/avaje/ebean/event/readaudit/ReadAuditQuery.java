@@ -7,13 +7,15 @@ import java.util.List;
  */
 public interface ReadAuditQuery {
 
+  void addQueryPlan(String queryKey, String sql);
+
   /**
    * Audit a find bean query.
    */
-  void auditBean(String auditQueryKey, String bindLog, String baseTable, Object id);
+  void auditBean(String queryKey, String bindLog, String baseTable, Object id);
 
   /**
    * Audit a find many query.
    */
-  void auditMany(String auditQueryKey, String bindLog, String baseTable, List<Object> ids);
+  void auditMany(String queryKey, String bindLog, String baseTable, List<Object> ids);
 }

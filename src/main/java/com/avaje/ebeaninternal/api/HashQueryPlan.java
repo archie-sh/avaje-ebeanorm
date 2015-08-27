@@ -20,7 +20,14 @@ public class HashQueryPlan {
   public String toString() {
     return planHash+":"+bindCount+(rawSql != null ? ":r" : "");
   }
-  
+
+  public String asKey() {
+    if (rawSql == null) {
+      return planHash+"_"+bindCount;
+    }
+    return "Not Supported Yet - use MD5?";
+  }
+
   public int hashCode() {
     int hc = planHash;
     hc = hc * 31 + bindCount;
