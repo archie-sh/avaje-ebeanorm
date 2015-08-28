@@ -14,6 +14,7 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.event.BeanPersistController;
 import com.avaje.ebean.event.BeanQueryAdapter;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.meta.MetaInfoManager;
 import com.avaje.ebean.plugin.SpiBeanType;
 import com.avaje.ebean.plugin.SpiServer;
@@ -134,6 +135,8 @@ public final class DefaultServer implements SpiServer, SpiEbeanServer {
 
   private final AutoFetchManager autoFetchManager;
 
+  private final ReadAuditLogger readAuditLogger;
+
   private final CQueryEngine cqueryEngine;
 
   private final List<SpiServerPlugin> serverPlugins;
@@ -237,6 +240,7 @@ public final class DefaultServer implements SpiServer, SpiEbeanServer {
 
     this.autoFetchManager = config.createAutoFetchManager(this);
     this.adminAutofetch = new MAdminAutofetch(autoFetchManager);
+    this.readAuditLogger = config.getReadAuditLogger();
 
     this.beanLoader = new DefaultBeanLoader(this);
     this.jsonContext = config.createJsonContext(this);
@@ -351,6 +355,11 @@ public final class DefaultServer implements SpiServer, SpiEbeanServer {
 
   public AutoFetchManager getAutoFetchManager() {
     return autoFetchManager;
+  }
+
+  @Override
+  public ReadAuditLogger getReadAuditLogger() {
+    return readAuditLogger;
   }
 
   /**

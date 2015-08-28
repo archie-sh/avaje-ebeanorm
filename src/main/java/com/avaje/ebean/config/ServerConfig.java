@@ -11,6 +11,7 @@ import com.avaje.ebean.event.*;
 import com.avaje.ebean.event.changelog.ChangeLogListener;
 import com.avaje.ebean.event.changelog.ChangeLogPrepare;
 import com.avaje.ebean.event.changelog.ChangeLogRegister;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.meta.MetaInfoManager;
 import com.avaje.ebean.util.ClassUtil;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -298,6 +299,8 @@ public class ServerConfig {
   private ChangeLogListener changeLogListener;
 
   private ChangeLogRegister changeLogRegister;
+
+  private ReadAuditLogger readAuditLogger;
 
   private EncryptKeyManager encryptKeyManager;
 
@@ -723,6 +726,20 @@ public class ServerConfig {
    */
   public void setChangeLogIncludeInserts(boolean changeLogIncludeInserts) {
     this.changeLogIncludeInserts = changeLogIncludeInserts;
+  }
+
+  /**
+   * Return the ReadAuditLogger to use.
+   */
+  public ReadAuditLogger getReadAuditLogger() {
+    return readAuditLogger;
+  }
+
+  /**
+   * Set the ReadAuditLogger to use.
+   */
+  public void setReadAuditLogger(ReadAuditLogger readAuditLogger) {
+    this.readAuditLogger = readAuditLogger;
   }
 
   /**

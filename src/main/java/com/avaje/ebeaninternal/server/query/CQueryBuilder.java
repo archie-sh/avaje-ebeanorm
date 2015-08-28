@@ -8,10 +8,8 @@ import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.config.dbplatform.SqlLimitRequest;
 import com.avaje.ebean.config.dbplatform.SqlLimitResponse;
 import com.avaje.ebean.config.dbplatform.SqlLimiter;
-import com.avaje.ebean.event.readaudit.DefaultQueryAudit;
-import com.avaje.ebean.event.readaudit.ReadAuditQuery;
+import com.avaje.ebean.event.readaudit.ReadAuditQueryPlan;
 import com.avaje.ebean.text.PathProperties;
-import com.avaje.ebeaninternal.api.HashQueryPlan;
 import com.avaje.ebeaninternal.api.ManyWhereJoins;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.core.OrmQueryRequest;
@@ -114,18 +112,9 @@ public class CQueryBuilder {
     // cache the query plan
     queryPlan = new CQueryPlan(request, sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
 
-    if (readAuditing) {
-      HashQueryPlan hash = queryPlan.getHash();
-      //TODO: take into account MD5 on raw sql.
-      String hashKey = hash.asKey();
-      readAudit.addQueryPlan(hashKey, queryPlan.getSql());
-    }
-
     request.putQueryPlan(queryPlan);
     return new CQueryFetchIds(request, predicates, sql);
   }
-  ReadAuditQuery readAudit = new DefaultQueryAudit();
-  boolean readAuditing = true;
 
   /**
    * Return the history support if this query needs it (is a 'as of' type query).
@@ -238,6 +227,11 @@ public class CQueryBuilder {
 
     } else {
       queryPlan = new CQueryPlan(request, res, sqlTree, false, predicates.getLogWhereSql());
+    }
+
+    if (request.isAuditReads()) {
+      BeanDescriptor<T> desc = request.getBeanDescriptor();
+      desc.getReadAuditLogger().logQueryPlan(new ReadAuditQueryPlan(desc.getFullName(), queryPlan.getAuditQueryKey(), queryPlan.getSql()));
     }
 
     // cache the query plan because we can reuse it and also

@@ -9,6 +9,7 @@ import com.avaje.ebean.cache.ServerCacheManager;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
 import com.avaje.ebean.dbmigration.DdlGenerator;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.meta.MetaInfoManager;
 import com.avaje.ebean.plugin.SpiServer;
 import com.avaje.ebean.text.csv.CsvReader;
@@ -88,6 +89,11 @@ public class TDSpiEbeanServer implements SpiEbeanServer {
 
   @Override
   public AutoFetchManager getAutoFetchManager() {
+    return null;
+  }
+
+  @Override
+  public ReadAuditLogger getReadAuditLogger() {
     return null;
   }
 

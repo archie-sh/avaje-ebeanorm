@@ -11,6 +11,7 @@ import com.avaje.ebean.bean.CallStack;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.config.dbplatform.DatabasePlatform;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebeaninternal.server.autofetch.AutoFetchManager;
 import com.avaje.ebeaninternal.server.core.SpiOrmQueryRequest;
 import com.avaje.ebean.dbmigration.DdlGenerator;
@@ -195,4 +196,8 @@ public interface SpiEbeanServer extends EbeanServer, BeanLoader, BeanCollectionL
    */
   void collectQueryStats(ObjectGraphNode objectGraphNode, long loadedBeanCount, long timeMicros);
 
+  /**
+   * Return the ReadAuditLogger to use for logging all read audit events.
+   */
+  ReadAuditLogger getReadAuditLogger();
 }

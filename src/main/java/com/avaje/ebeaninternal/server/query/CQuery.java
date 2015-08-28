@@ -9,7 +9,8 @@ import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
-import com.avaje.ebeaninternal.api.HashQueryPlan;
+import com.avaje.ebean.event.readaudit.ReadBeanEvent;
+import com.avaje.ebean.event.readaudit.ReadManyEvent;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.api.SpiTransaction;
@@ -713,18 +714,21 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
   public void auditFind(EntityBean bean) {
     if (bean != null) {
       // only audit when a bean was actually found
-      desc.getQueryAudit().auditBean(getAuditQueryKey(), bindLog, desc.getBaseTable(), desc.getId(bean));
+      desc.getReadAuditLogger().auditBean(new ReadBeanEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, desc.getIdForJson(bean)));
     }
   }
 
   public void auditFindMany() {
 
-    List<Object> ids = new ArrayList<Object>(collection.size());
-    Collection<T> underlyingBeans = collection.getActualDetails();
-    for (T underlyingBean : underlyingBeans) {
-      ids.add(desc.getBeanId(underlyingBean));
+    if (!collection.isEmpty()) {
+      // get the id values of the underlying collection
+      List<Object> ids = new ArrayList<Object>(collection.size());
+      Collection<T> underlyingBeans = collection.getActualDetails();
+      for (T underlyingBean : underlyingBeans) {
+        ids.add(desc.getIdForJson(underlyingBean));
+      }
+      desc.getReadAuditLogger().auditMany(new ReadManyEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, ids));
     }
-    desc.getQueryAudit().auditMany(getAuditQueryKey(), bindLog, desc.getBaseTable(), ids);
   }
 
   /**
@@ -732,8 +736,10 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
    */
   private void auditIterateLogMessage() {
 
-    desc.getQueryAudit().auditMany(getAuditQueryKey(), bindLog, desc.getBaseTable(), auditFindIterateIds);
-    auditFindIterateIds.clear();
+    if (!auditFindIterateIds.isEmpty()) {
+      desc.getReadAuditLogger().auditMany(new ReadManyEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, auditFindIterateIds));
+      auditFindIterateIds.clear();
+    }
   }
 
   /**
@@ -754,14 +760,5 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
     }
   }
 
-  private String getAuditQueryKey() {
-    HashQueryPlan hash = queryPlan.getHash();
-    if (queryPlan.isRawSql()) {
-      // use MD5 to hash the rawSql?
-      return hash.asKey();
-    } else {
-      return hash.asKey();
-    }
-  }
 
 }

@@ -19,8 +19,7 @@ import com.avaje.ebean.event.BeanQueryAdapter;
 import com.avaje.ebean.event.changelog.BeanChange;
 import com.avaje.ebean.event.changelog.ChangeLogFilter;
 import com.avaje.ebean.event.changelog.ChangeType;
-import com.avaje.ebean.event.readaudit.DefaultQueryAudit;
-import com.avaje.ebean.event.readaudit.ReadAuditQuery;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.meta.MetaBeanInfo;
 import com.avaje.ebean.meta.MetaQueryPlanStatistic;
 import com.avaje.ebean.plugin.SpiBeanType;
@@ -89,16 +88,6 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
   private final ConcurrentHashMap<String, ElPropertyDeploy> elDeployCache = new ConcurrentHashMap<String, ElPropertyDeploy>();
 
   private final ConcurrentHashMap<String, ElComparator<T>> comparatorCache = new ConcurrentHashMap<String, ElComparator<T>>();
-
-  public boolean isAuditReads() {
-    return true;
-  }
-
-  ReadAuditQuery queryAudit = new DefaultQueryAudit();
-
-  public ReadAuditQuery getQueryAudit() {
-    return queryAudit;
-  }
 
   public enum EntityType {
     ORM, EMBEDDED, SQL
@@ -618,6 +607,20 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
         deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
       }
     }
+  }
+
+  /**
+   * Return true if reads are audited for this bean type.
+   */
+  public boolean isAuditReads() {
+    return true;
+  }
+
+  /**
+   * Return the ReadAuditLogger for logging read audit events.
+   */
+  public ReadAuditLogger getReadAuditLogger() {
+    return ebeanServer.getReadAuditLogger();
   }
 
   /**
@@ -1368,6 +1371,26 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
   }
 
   /**
+   * Return the Id value for the bean with embeddedId beans converted into maps.
+   * <p>
+   * The usage is to provide simple id types for JSON processing (for embeddedId's).
+   * </p>
+   */
+  public Object getIdForJson(Object bean) {
+    return idBinder.getIdForJson((EntityBean) bean);
+  }
+
+  /**
+   * Convert the idValue assuming embeddedId values are Maps.
+   * <p>
+   * The usage is to provide simple id types for JSON processing (for embeddedId's).
+   * </p>
+   */
+  public Object convertIdFromJson(Object idValue) {
+    return idBinder.convertIdFromJson(idValue);
+  }
+  
+  /**
    * Return the default order by that may need to be added if a many property is
    * included in the query.
    */
@@ -1379,7 +1402,7 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
    * Convert the type of the idValue if required.
    */
   public Object convertId(Object idValue) {
-    return idBinder.convertSetId(idValue, null);
+    return idBinder.convertId(idValue);
   }
 
   /**

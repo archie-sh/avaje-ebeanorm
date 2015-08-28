@@ -9,6 +9,8 @@ import com.avaje.ebean.config.dbplatform.DbHistorySupport;
 import com.avaje.ebean.event.changelog.ChangeLogListener;
 import com.avaje.ebean.event.changelog.ChangeLogPrepare;
 import com.avaje.ebean.event.changelog.ChangeLogRegister;
+import com.avaje.ebean.event.readaudit.DefaultQueryAudit;
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.plugin.SpiServerPlugin;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.SpiBackgroundExecutor;
@@ -189,6 +191,12 @@ public class InternalConfiguration {
    */
   public ChangeLogListener changeLogListener(ChangeLogListener listener) {
     return plugin((listener != null) ? listener : new DefaultChangeLogListener());
+  }
+
+  public ReadAuditLogger getReadAuditLogger() {
+
+    ReadAuditLogger found = bootupClasses.getReadAuditLogger();
+    return plugin( found != null ? found : new DefaultQueryAudit());
   }
 
   /**
