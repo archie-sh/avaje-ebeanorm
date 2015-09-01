@@ -5,7 +5,15 @@ package com.avaje.ebean.event.readaudit;
  */
 public interface ReadAuditLogger {
 
-  void logQueryPlan(ReadAuditQueryPlan queryPlan);
+  /**
+   * Called when a new query plan is created.
+   * <p>
+   * The query plan has the full sql and logging the query plan separately means that each of
+   * the bean and many read events can log the query plan key and not the full sql (reducing the
+   * bulk size of the read audit logs).
+   * </p>
+   */
+  void queryPlan(ReadAuditQueryPlan queryPlan);
 
   /**
    * Audit a find bean query that returned a bean.

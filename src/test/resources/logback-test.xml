@@ -44,7 +44,11 @@
     </encoder>
   </appender>
 
-  <logger name="org.avaje.ebean.QueryAudit" level="TRACE" additivity="false">
+  <logger name="org.avaje.ebean.ReadAuditQuery" level="TRACE" additivity="false">
+    <appender-ref ref="READAUDIT_LOG"/>
+  </logger>
+
+  <logger name="org.avaje.ebean.ReadAudit" level="TRACE" additivity="false">
     <appender-ref ref="READAUDIT_LOG"/>
   </logger>
 

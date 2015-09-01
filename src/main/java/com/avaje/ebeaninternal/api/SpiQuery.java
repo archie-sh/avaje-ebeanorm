@@ -634,8 +634,13 @@ public interface SpiQuery<T> extends Query<T> {
   int getBufferFetchSizeHint();
 
   /**
-   * Return true if this is a query executing in the background.
+   * Return true if read auditing is disabled on this query.
    */
+  boolean isDisableReadAudit();
+
+    /**
+     * Return true if this is a query executing in the background.
+     */
   boolean isFutureFetch();
 
   /**

@@ -9,8 +9,6 @@ import com.avaje.ebean.bean.NodeUsageCollector;
 import com.avaje.ebean.bean.NodeUsageListener;
 import com.avaje.ebean.bean.ObjectGraphNode;
 import com.avaje.ebean.bean.PersistenceContext;
-import com.avaje.ebean.event.readaudit.ReadBeanEvent;
-import com.avaje.ebean.event.readaudit.ReadManyEvent;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.api.SpiQuery.Mode;
 import com.avaje.ebeaninternal.api.SpiTransaction;
@@ -714,7 +712,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
   public void auditFind(EntityBean bean) {
     if (bean != null) {
       // only audit when a bean was actually found
-      desc.getReadAuditLogger().auditBean(new ReadBeanEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, desc.getIdForJson(bean)));
+      desc.readAuditBean(queryPlan.getAuditQueryKey(), bindLog, bean);
     }
   }
 
@@ -727,7 +725,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
       for (T underlyingBean : underlyingBeans) {
         ids.add(desc.getIdForJson(underlyingBean));
       }
-      desc.getReadAuditLogger().auditMany(new ReadManyEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, ids));
+      desc.readAuditMany(queryPlan.getAuditQueryKey(), bindLog, ids);
     }
   }
 
@@ -737,7 +735,7 @@ public class CQuery<T> implements DbReadContext, CancelableQuery {
   private void auditIterateLogMessage() {
 
     if (!auditFindIterateIds.isEmpty()) {
-      desc.getReadAuditLogger().auditMany(new ReadManyEvent(desc.getFullName(), queryPlan.getAuditQueryKey(), bindLog, auditFindIterateIds));
+      desc.readAuditMany(queryPlan.getAuditQueryKey(), bindLog, auditFindIterateIds);
       auditFindIterateIds.clear();
     }
   }

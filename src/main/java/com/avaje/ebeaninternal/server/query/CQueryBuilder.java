@@ -229,9 +229,10 @@ public class CQueryBuilder {
       queryPlan = new CQueryPlan(request, res, sqlTree, false, predicates.getLogWhereSql());
     }
 
-    if (request.isAuditReads()) {
-      BeanDescriptor<T> desc = request.getBeanDescriptor();
-      desc.getReadAuditLogger().logQueryPlan(new ReadAuditQueryPlan(desc.getFullName(), queryPlan.getAuditQueryKey(), queryPlan.getSql()));
+    BeanDescriptor<T> desc = request.getBeanDescriptor();
+    if (desc.isReadAuditing()) {
+      // log the query plan based bean type (i.e. ignoring query disabling for logging the sql/plan)
+      desc.getReadAuditLogger().queryPlan(new ReadAuditQueryPlan(desc.getFullName(), queryPlan.getAuditQueryKey(), queryPlan.getSql()));
     }
 
     // cache the query plan because we can reuse it and also

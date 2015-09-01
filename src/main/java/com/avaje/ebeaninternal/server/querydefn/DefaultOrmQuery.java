@@ -173,6 +173,8 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
   private Timestamp versionsStart;
   private Timestamp versionsEnd;
 
+  private boolean disableReadAudit;
+
   private int bufferFetchSizeHint;
 
   private boolean usageProfiling = true;
@@ -1302,6 +1304,16 @@ public class DefaultOrmQuery<T> implements SpiQuery<T> {
 
   public int getBufferFetchSizeHint() {
     return bufferFetchSizeHint;
+  }
+
+  @Override
+  public Query<T> setDisableReadAuditing() {
+    this.disableReadAudit = true;
+    return this;
+  }
+
+  public boolean isDisableReadAudit() {
+    return disableReadAudit;
   }
 
   public void setBeanCollectionTouched(BeanCollectionTouched notify) {

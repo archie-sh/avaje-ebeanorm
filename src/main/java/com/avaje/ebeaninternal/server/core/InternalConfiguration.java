@@ -9,7 +9,7 @@ import com.avaje.ebean.config.dbplatform.DbHistorySupport;
 import com.avaje.ebean.event.changelog.ChangeLogListener;
 import com.avaje.ebean.event.changelog.ChangeLogPrepare;
 import com.avaje.ebean.event.changelog.ChangeLogRegister;
-import com.avaje.ebean.event.readaudit.DefaultQueryAudit;
+import com.avaje.ebeaninternal.server.readaudit.DefaultQueryAudit;
 import com.avaje.ebean.event.readaudit.ReadAuditLogger;
 import com.avaje.ebean.plugin.SpiServerPlugin;
 import com.avaje.ebean.text.json.JsonContext;

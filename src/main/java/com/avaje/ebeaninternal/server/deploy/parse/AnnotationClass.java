@@ -13,6 +13,7 @@ import com.avaje.ebean.annotation.EntityConcurrencyMode;
 import com.avaje.ebean.annotation.History;
 import com.avaje.ebean.annotation.NamedUpdate;
 import com.avaje.ebean.annotation.NamedUpdates;
+import com.avaje.ebean.annotation.ReadAudit;
 import com.avaje.ebean.annotation.UpdateMode;
 import com.avaje.ebean.config.TableName;
 import com.avaje.ebeaninternal.server.core.CacheOptions;
@@ -89,6 +90,11 @@ public class AnnotationClass extends AnnotationParser {
           descriptor.addCompoundUniqueConstraint(new CompoundUniqueContraint(c.columnNames()));
         }
       }
+    }
+
+    ReadAudit readAudit = cls.getAnnotation(ReadAudit.class);
+    if (readAudit != null) {
+      descriptor.setReadAuditing();
     }
 
     History history = cls.getAnnotation(History.class);

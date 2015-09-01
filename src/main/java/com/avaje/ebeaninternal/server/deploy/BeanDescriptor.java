@@ -20,6 +20,8 @@ import com.avaje.ebean.event.changelog.BeanChange;
 import com.avaje.ebean.event.changelog.ChangeLogFilter;
 import com.avaje.ebean.event.changelog.ChangeType;
 import com.avaje.ebean.event.readaudit.ReadAuditLogger;
+import com.avaje.ebean.event.readaudit.ReadBeanEvent;
+import com.avaje.ebean.event.readaudit.ReadManyEvent;
 import com.avaje.ebean.meta.MetaBeanInfo;
 import com.avaje.ebean.meta.MetaQueryPlanStatistic;
 import com.avaje.ebean.plugin.SpiBeanType;
@@ -143,6 +145,11 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
   private final String baseTableAsOf;
   private final String baseTableVersionsBetween;
   private final boolean historySupport;
+
+  /**
+   * Set to true if read auditing is on for this bean type.
+   */
+  private final boolean readAuditing;
 
   /**
    * Map of BeanProperty Linked so as to preserve order.
@@ -363,6 +370,7 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
     this.updateChangesOnly = deploy.isUpdateChangesOnly();
     this.compoundUniqueConstraints = deploy.getCompoundUniqueConstraints();
 
+    this.readAuditing = deploy.isReadAuditing();
     this.historySupport = deploy.isHistorySupport();
     this.baseTable = InternString.intern(deploy.getBaseTable());
     this.baseTableAsOf = deploy.getBaseTableAsOf();
@@ -607,13 +615,6 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
         deleteRecurseSkippable = inheritInfo.isDeleteRecurseSkippable();
       }
     }
-  }
-
-  /**
-   * Return true if reads are audited for this bean type.
-   */
-  public boolean isAuditReads() {
-    return true;
   }
 
   /**
@@ -955,7 +956,21 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
   public void cacheHandleUpdate(Object id, PersistRequestBean<T> updateRequest) {
     cacheHelp.handleUpdate(id, updateRequest);
   }
-  
+
+  /**
+   * Write a bean read to the read audit log.
+   */
+  public void readAuditBean(String queryKey, String bindLog, Object bean) {
+    getReadAuditLogger().auditBean(new ReadBeanEvent(fullName, queryKey, bindLog, getIdForJson(bean)));
+  }
+
+  /**
+   * Write a many bean read to the read audit log.
+   */
+  public void readAuditMany(String queryKey, String bindLog, List<Object> ids) {
+    getReadAuditLogger().auditMany(new ReadManyEvent(fullName, queryKey, bindLog, ids));
+  }
+
   /**
    * Return the base table alias. This is always the first letter of the bean
    * name.
@@ -1216,6 +1231,9 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
       if (d != null) {
         Object shareableBean = d.getSharableBean();
         if (shareableBean != null) {
+          if (isReadAuditing()) {
+            readAuditBean("ref", "", shareableBean);
+          }
           return (T) shareableBean;
         }
       }
@@ -1803,6 +1821,13 @@ public class BeanDescriptor<T> implements MetaBeanInfo, SpiBeanType<T> {
       case AS_OF: return baseTableAsOf;
         default: return baseTable;
     }
+  }
+
+  /**
+   * Return true if read auditing is on this entity bean.
+   */
+  public boolean isReadAuditing() {
+    return readAuditing;
   }
 
   /**

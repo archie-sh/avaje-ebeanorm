@@ -1,5 +1,9 @@
-package com.avaje.ebean.event.readaudit;
+package com.avaje.ebeaninternal.server.readaudit;
 
+import com.avaje.ebean.event.readaudit.ReadAuditLogger;
+import com.avaje.ebean.event.readaudit.ReadAuditQueryPlan;
+import com.avaje.ebean.event.readaudit.ReadBeanEvent;
+import com.avaje.ebean.event.readaudit.ReadManyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,10 +13,10 @@ public class DefaultQueryAudit implements ReadAuditLogger {
 
   private static final Logger queryLogger = LoggerFactory.getLogger("org.avaje.ebean.ReadAuditQuery");
 
-  private static final Logger planLogger = LoggerFactory.getLogger("org.avaje.ebean.ReadAuditPlan");
+  private static final Logger planLogger = LoggerFactory.getLogger("org.avaje.ebean.ReadAudit");
 
   @Override
-  public void logQueryPlan(ReadAuditQueryPlan queryPlan) {
+  public void queryPlan(ReadAuditQueryPlan queryPlan) {
     planLogger.info(queryPlan.toString());
   }
 
